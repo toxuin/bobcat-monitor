@@ -5,7 +5,7 @@ intervalSeconds: 20
 
 mqtt:
   enabled: true
-  server: mq.ninefives.wtf
+  server: mqtt.example.com
   port: 1883
   username: username
   password: Assword12345

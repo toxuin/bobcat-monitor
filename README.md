@@ -14,6 +14,20 @@ It enables many scenarios like
 
 Note that none of these scenarios are in scope of this application and have to be implemented by other software components - like [Home Assistant](https://www.home-assistant.io) or [Node-RED](https://nodered.org).
 
+## Running with Docker
+
+You can either use ready-built image or build your own.
+
+`docker run -d -v $PWD/config.yml:/config.yml quay.io/toxuin/bobcat-monitor`
+
+Pre-built image supports x86_64, armv6, armv7, arm64v8, and ppc64le.
+
+Works on:
+- Normal computers
+- Raspberry pi
+- ARM macs
+- Many more things!
+
 ## Configuration
 
 Sample config (config.yml) contains all the possible configuration options, which are pretty self-explanatory.
