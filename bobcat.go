@@ -76,7 +76,7 @@ func (bobcat Bobcat) Begin() {
 		}
 
 		// PARSE STRINGFUL JSON INTO STRUCT WITH INTS
-		bobcatStatus := BobcatStatus{Status: jsonResponse.Status}
+		bobcatStatus := BobcatStatus{Status: jsonResponse.Status, Valid: true}
 		gap, err := strconv.ParseInt(jsonResponse.Gap, 10, 64)
 		if err != nil {
 			bobcatStatus.Valid = false

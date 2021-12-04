@@ -87,19 +87,21 @@ func main() {
 	println("BOBCAT INIT DONE!")
 
 	go func() {
-		bobcatStatus := <-bobcatChannel
-		if config.Mqtt.Enabled {
-			if config.Debug {
-				log.Println("POSTING STATUS TO MQTT...")
-			}
-			payload, err := json.Marshal(bobcatStatus)
-			if err != nil {
-				log.Printf("Error while unmarshalling JSON: %s", err)
-			} else {
-				var topic = "bobcat"
-				mqttBus.SendMessage(config.Mqtt.TopicRoot+"/"+topic, payload)
+		for {
+			bobcatStatus := <-bobcatChannel
+			if config.Mqtt.Enabled {
 				if config.Debug {
-					log.Printf("SENT MQTT MESSAGE: %s TO TOPIC %s \n", payload, topic)
+					log.Println("POSTING STATUS TO MQTT...")
+				}
+				payload, err := json.Marshal(bobcatStatus)
+				if err != nil {
+					log.Printf("Error while unmarshalling JSON: %s", err)
+				} else {
+					var topic = "bobcat"
+					mqttBus.SendMessage(config.Mqtt.TopicRoot+"/"+topic, payload)
+					if config.Debug {
+						log.Printf("SENT MQTT MESSAGE: %s TO TOPIC %s \n", payload, topic)
+					}
 				}
 			}
 		}
