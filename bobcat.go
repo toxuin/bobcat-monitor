@@ -12,9 +12,11 @@ import (
 
 type Bobcat struct {
 	Debug         bool
+	ErrorLimit    int
 	periodSeconds int
 	address       string
 	eventChannel  chan<- BobcatStatus
+	errorCount    int
 }
 
 type BobcatStatus struct {
@@ -23,6 +25,8 @@ type BobcatStatus struct {
 	MinerHeight      int64  `json:"miner_height"`
 	BlockchainHeight int64  `json:"blockchain_height"`
 	Epoch            int64  `json:"epoch"`
+	LatencyMs        int64  `json:"latency_ms"`
+	ErrorCount       int    `json:"error_count"`
 	Valid            bool   `json:"valid"`
 }
 
@@ -41,24 +45,40 @@ func (bobcat Bobcat) Begin() {
 	if bobcat.address == "" {
 		panic("Empty Bobcat address!")
 	}
+	if bobcat.ErrorLimit == 0 {
+		bobcat.ErrorLimit = 1
+	}
 
 	bobcatUrl := url.URL{Scheme: "http", Host: bobcat.address, Path: "/status.json"}
 	client := http.Client{
 		Timeout: time.Duration(HTTP_TIMEOUT_SECONDS) * time.Second,
 	}
 
-	for true {
+	for {
 		if bobcat.Debug {
 			log.Printf("Fetching bobcat status from %s", bobcatUrl.String())
 		}
+		requestStart := time.Now()
 		resp, err := client.Get(bobcatUrl.String())
 		if err != nil {
+			bobcat.errorCount++
+			if bobcat.errorCount >= bobcat.ErrorLimit {
+				bobcatStatus := BobcatStatus{
+					Status:     "Error",
+					LatencyMs:  int64(time.Since(requestStart) / time.Millisecond),
+					ErrorCount: bobcat.errorCount,
+					Valid:      false,
+				}
+				bobcat.eventChannel <- bobcatStatus
+			}
 			log.Printf("Error while fetching bobcat status: %s \n", err)
 			time.Sleep(time.Duration(bobcat.periodSeconds) * time.Second)
 			continue
 		}
+		requestEnd := time.Since(requestStart)
+		bobcat.errorCount = 0
 		if bobcat.Debug {
-			log.Println("Got response from bobcat!")
+			log.Printf("Got response from bobcat! Latency: %v\n", requestEnd)
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)
@@ -76,7 +96,11 @@ func (bobcat Bobcat) Begin() {
 		}
 
 		// PARSE STRINGFUL JSON INTO STRUCT WITH INTS
-		bobcatStatus := BobcatStatus{Status: jsonResponse.Status, Valid: true}
+		bobcatStatus := BobcatStatus{
+			Status:    jsonResponse.Status,
+			LatencyMs: int64(requestEnd / time.Millisecond),
+			Valid:     true,
+		}
 		gap, err := strconv.ParseInt(jsonResponse.Gap, 10, 64)
 		if err != nil {
 			bobcatStatus.Valid = false
