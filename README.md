@@ -54,6 +54,35 @@ Sample config (config.yml) contains all the possible configuration options, whic
 
 `topicRoot`: topic under which all the bobcat-related messages will be posted. Defaults to `bobcat-monitor` when not set.
 
+## Example Payloads
+
+- Normal payload:
+  ```json
+  {
+    "status": "Synced",
+    "gap": 0,
+    "miner_height": 1125656,
+    "blockchain_height": 1125656,
+    "epoch": 29487,
+    "latency_ms": 686,
+    "error_count": 0,
+    "valid": true
+  }
+  ```
+
+- Error (timeout, Bobcat offline, etc)
+  ```json
+    {
+      "status": "Error",
+      "gap": 0,
+      "miner_height": 0,
+      "blockchain_height": 0,
+      "epoch": 0,
+      "latency_ms": 101,
+      "error_count": 2,
+      "valid": false
+  }
+  ```
 
 ## Support the author
 
