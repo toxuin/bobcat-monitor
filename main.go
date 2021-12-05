@@ -97,8 +97,8 @@ func main() {
 				if err != nil {
 					log.Printf("Error while unmarshalling JSON: %s", err)
 				} else {
-					var topic = "bobcat"
-					mqttBus.SendMessage(config.Mqtt.TopicRoot+"/"+topic, payload)
+					var topic = config.Mqtt.TopicRoot + "/bobcat"
+					mqttBus.SendMessage(topic, payload)
 					if config.Debug {
 						log.Printf("SENT MQTT MESSAGE: %s TO TOPIC %s \n", payload, topic)
 					}

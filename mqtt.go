@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"log"
 	"math/rand"
 	"strconv"
 	"time"
@@ -21,7 +21,7 @@ type MqttBus struct {
 
 func (mqtt *MqttBus) Initialize() {
 	if mqtt.Debug {
-		fmt.Println("INITIALIZING MQTT BUS...")
+		log.Println("MQTT: INITIALIZING...")
 	}
 	if mqtt.Port == 0 {
 		mqtt.Port = 1883
@@ -45,12 +45,12 @@ func (mqtt *MqttBus) Initialize() {
 	mqttOpts.SetWill(mqtt.TopicRoot+"/monitor", `{ "status": "down" }`, 0, false)
 
 	mqttOpts.OnConnect = func(client MQTT.Client) {
-		fmt.Printf("MQTT: CONNECTED TO %s\n", mqtt.Server)
+		log.Printf("MQTT: CONNECTED TO %s\n", mqtt.Server)
 	}
 
 	mqttOpts.DefaultPublishHandler = func(client MQTT.Client, msg MQTT.Message) {
 		if mqtt.Debug {
-			fmt.Printf("  MQTT: TOPIC: %s\n  MQTT: MESSAGE: %s\n", msg.Topic(), msg.Payload())
+			log.Printf("  MQTT: TOPIC: %s\n  MQTT: MESSAGE: %s\n", msg.Topic(), msg.Payload())
 		}
 	}
 
@@ -64,10 +64,10 @@ func (mqtt *MqttBus) Initialize() {
 
 func (mqtt *MqttBus) SendMessage(topic string, payload interface{}) {
 	if !mqtt.client.IsConnected() {
-		fmt.Println("MQTT: CLIENT NOT CONNECTED")
+		log.Println("MQTT: CLIENT NOT CONNECTED")
 		return
 	}
 	if token := mqtt.client.Publish(topic, 0, false, payload); token.Wait() && token.Error() != nil {
-		fmt.Printf("MQTT ERROR, %s\n", token.Error())
+		log.Printf("MQTT: ERROR %s\n", token.Error())
 	}
 }
